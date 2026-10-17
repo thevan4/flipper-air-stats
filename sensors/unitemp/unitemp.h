@@ -53,7 +53,7 @@ typedef enum {
     UT_HUMIDITY_COUNT
 } humidityUnit;
 
-typedef enum { CO2_TYPE_PWM = 0, CO2_TYPE_UART = 1 } Co2SensorType;
+typedef enum { CO2_TYPE_PWM = 0, CO2_TYPE_UART = 1, CO2_TYPE_SCD40 = 2 } Co2SensorType;
 
 typedef struct {
     uint8_t backlight_mode;  /* 0=Off 1=Auto 2=1m 3=5m 4=10m 5=20m 6=60m 7=Inf */

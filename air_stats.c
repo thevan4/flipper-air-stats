@@ -156,7 +156,8 @@ bool unitemp_loadSettings(void) {
             app->settings.heat_index = (bool)p;
         } else if(!strcmp(key, "CO2_TYPE")) {
             sscanf((char*)(file_buf + line_end), "\nCO2_TYPE %d", &p);
-            app->settings.co2_type = (Co2SensorType)p;
+            if(p >= CO2_TYPE_PWM && p <= CO2_TYPE_SCD40)
+                app->settings.co2_type = (Co2SensorType)p;
         } else if(!strcmp(key, "CLIMATE_TYPE_IDX")) {
             sscanf((char*)(file_buf + line_end), "\nCLIMATE_TYPE_IDX %d", &p);
             app->settings.climate_type_idx = (uint8_t)p;
@@ -347,8 +348,10 @@ int32_t air_stats_main(void* p) {
     /* Sync CO2 sensor type: settings.co2_type must match the actual loaded sensor.
      * If they diverge (e.g. save was interrupted last session), fix silently. */
     {
-        const SensorType* expected = (app->settings.co2_type == CO2_TYPE_UART) ?
-                                     &MHZ19C_UART : &MHZ19C;
+        const SensorType* expected = app->settings.co2_type == CO2_TYPE_SCD40 ?
+                                        &SCD40.super :
+                                    app->settings.co2_type == CO2_TYPE_UART ?
+                                        &MHZ19C_UART : &MHZ19C;
         bool ok = false;
         for(uint8_t i = 0; i < app->sensors_count; i++) {
             if(app->sensors[i]->type == expected) { ok = true; break; }
@@ -358,7 +361,8 @@ int32_t air_stats_main(void* p) {
                 if(app->sensors[i]->type->datatype & UT_CO2)
                     app->sensors[i]->status = UT_SENSORSTATUS_INACTIVE;
             }
-            Sensor* co2 = unitemp_sensor_alloc("MH-Z19C", expected, "");
+            char* name = app->settings.co2_type == CO2_TYPE_SCD40 ? "SCD40/41" : "MH-Z19C";
+            Sensor* co2 = unitemp_sensor_alloc(name, expected, "");
             if(co2) unitemp_sensors_add(co2);
             unitemp_sensors_save();
         }

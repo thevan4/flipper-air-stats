@@ -1,11 +1,13 @@
-.PHONY: build install standard clean
+UFBT ?= ufbt
 
-# Build for Momentum firmware (mntm-012, API 87.1) using ufbt
+.PHONY: build install standard clean unleashed
+
+# Uses the SDK selected by UFBT_HOME. uFBT exports dist/air_stats.fap.
 build:
-	ufbt fap_co2_app
-	@mkdir -p dist
-	@cp /Users/ivatikhonov/.ufbt/build/co2_app.fap dist/co2_app_mntm_87.1.fap
-	@echo "Built: dist/co2_app_mntm_87.1.fap"
+	$(UFBT)
+
+install: build
+	$(UFBT) launch
 
 # Build for Unleashed firmware (legacy)
 unleashed:
